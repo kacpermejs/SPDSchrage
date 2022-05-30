@@ -165,19 +165,6 @@ T& Heap<T>::operator[](int index)
     return t;
 }
 
-
-int computeTotalLength(const int N, std::vector<int> &R, std::vector<int> &P, std::vector<int> &Q, std::vector<int> &X)
-{
-	int m = 0, c = 0;
-	for (int n = 1; n <= N; n++)
-	{
-		int x = X[n];
-		m = std::max(m, R[x]) + P[x];
-		c = std::max(c, m + Q[x]);
-	}
-	return c;
-}
-
 struct Task
 {
     int index;
@@ -190,11 +177,22 @@ struct Task
 
     Task(int r, int p, int q) : R(r), P(p), Q(q), C(-1) {}
     Task(int r, int p, int q, int id) : R(r), P(p), Q(q), index(id), C(-1) {}
-    Task( const Task& t, int c) : R(t.R), P(t.P), Q(t.Q), index(t.index), C(c) {}
+    Task(const Task& t, int c) : R(t.R), P(t.P), Q(t.Q), index(t.index), C(c) {}
 
-    
+
 };
 
+int computeTotalLength(const int N, std::vector<int> &R, std::vector<int> &P, std::vector<int> &Q, std::vector<int> &X)
+{
+	int m = 0, c = 0;
+	for (int n = 1; n <= N; n++)
+	{
+		int x = X[n];
+		m = std::max(m, R[x]) + P[x];
+		c = std::max(c, m + Q[x]);
+	}
+	return c;
+}
 
 
 struct compareR
@@ -269,18 +267,19 @@ void Schrage2(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
         //dodaj pozosta³¹ czêœæ bierz¹cego zadanoia je¿eli jeszcze zota³a
         if (!C.empty()) //by³o ju¿ jakieœ zadanie
         {
-            if (t - tOld < C.back().P) // czas od pocz¹tku zadania do jego przerwania < od jego czasu trwania
+            if (!MaxHeapQ.empty() && MaxHeapQ.top().Q > C.back().Q)
             {
-                Task temp = Task(C.back());
-                C.back().C = -1;
-                temp.R = 0;
-                temp.P -= t - tOld;
-                MaxHeapQ.push(temp);
-            }
+                
+                if (t - tOld < C.back().P) // czas od pocz¹tku zadania do jego przerwania < od jego czasu trwania
+                {
+                    Task temp = Task(C.back());
+                    C.back().C = -1;
+                    temp.R = 0;
+                    temp.P -= t - tOld;
+                    MaxHeapQ.push(temp);
+                } 
+            }      
         }
-        
-
-
         //==========================================================================
 
 
@@ -288,7 +287,7 @@ void Schrage2(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
         //ustwianie zadañ w kolejnoœci =============================================
         if (!MaxHeapQ.empty())
         {
-            
+            tOld = t;
             if (!MinHeapR.empty())
                 t = std::min(t + MaxHeapQ.top().P, MinHeapR.top().R); //dodaj czas trwania zadania dostêpnego lub moment w którym mo¿e zostac przewane
             else
@@ -307,36 +306,6 @@ void Schrage2(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
     }
 }
 
-/*
-if (!MaxHeapQ.empty())
-        {
-            if (!C.empty())
-            {
-                int tOld = t;
-
-                t += std::min(t + C.back().P, MinHeapR.top().R); // idziemy do momentu w którym pojawi siê nowe dostêpne
-
-                if (C.back().P >= t - tOld)
-                {
-                    Task temp = Task(C.back());
-                    C.back().C = -1;
-                    temp.R = 0;
-                    temp.P -= t - tOld;
-                    MaxHeapQ.push(temp);
-                }
-            }
-            else
-            {
-                t = MinHeapR.top().R;
-            }
-
-            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));
-            MaxHeapQ.pop();
-
-
-        }
-*/
-
 int main()
 {
     int N;
@@ -353,7 +322,7 @@ int main()
 
 	std::string tmp;
 
-    std::string dataSource = "data.000:";
+    std::string dataSource = "data.007:";
 	
 	while (tmp != dataSource)
 		data >> tmp;
@@ -374,8 +343,6 @@ int main()
 	}
     
     Schrage2(MinHeapR, MaxHeapQ, C);
-    
-
 
     int Cmax = 0;
     for (int i = 0; i < C.size(); i++)
@@ -390,64 +357,6 @@ int main()
 
     }
     std::cout << std::endl;
-
-
-    
-
-    
-    
-
-
-    /*
-	int c = computeTotalLength(N, R, P, Q, X);
-	totalC += c;
-	//std::cout << dataSource[i] << std::endl;
-	std::cout << "dlugosc: " << c << std::endl;
-	for (int i = 1; i <= N; i++)
-	{
-		std::cout << X[i] << " ";
-	}
-	std::cout << std::endl;
-	
-	data.close();
-	std::cout << "Total: " << totalC << std::endl;
-    */
 	return 0;
 }
 
-
-/*
-
-int daneDoKopca[10] = { 2, 20, 4, 8, 9, 1 , 5, 5, 7, 16 };
-
-    for (int i = 0; i < 10; i++)
-    {
-        //h1.insert(daneDoKopca[i]);
-        MinHeapR.push(Task(daneDoKopca[i], 0 , 0) );
-        //MaxHeapQ.push(Task(0, 0 , daneDoKopca[i]));
-    }
-
-    for (int i = 1; i <= 10; i++)
-    {
-        //std::cout << h1[1] << " ";
-        //h1.removeMax();
-        std::cout << MinHeapR.top().R << " ";
-        MinHeapR.pop();
-        //std::cout << MaxHeapQ.top() << " ";
-        //MaxHeapQ.pop();
-    }
-    std::cout << std::endl;
-    //===================================================================
-
-    for (int i = 1; i <= N; i++)
-    {
-        //std::cout << h1[1] << " ";
-        //h1.removeMax();
-        std::cout << MinHeapR.top().R << " ";
-        MinHeapR.pop();
-        //std::cout << MaxHeapQ.top() << " ";
-        //MaxHeapQ.pop();
-    }
-    std::cout << std::endl;
-
-*/
