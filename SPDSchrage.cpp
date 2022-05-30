@@ -236,14 +236,14 @@ void Schrage1(std::priority_queue<Task, std::vector<Task>, compareR > &MinHeapR,
 
         if (!MaxHeapQ.empty())
         {
-            t += MaxHeapQ.top().P; //czas trwania zadania dostêpnego
+            t += MaxHeapQ.top().P; //dodaj czas trwania zadania dostêpnego
 
-            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));
+            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));//doadaj do uszeregowania zadanie i jego czas zakoñczenia
             MaxHeapQ.pop();
         }
         else
         {
-            t = MinHeapR.top().R;
+            t = MinHeapR.top().R;//je¿eli nie ma zadañ dostêpnych, idŸ do momentu w którym pojawi siê zadanie
         }
     }
 }
@@ -257,48 +257,53 @@ void Schrage2(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
 
     while (!MinHeapR.empty() || !MaxHeapQ.empty())
     {
-        tOld = t;
+        //dodawanie nowych zadañ ===================================================
+        
+        //dodaj zadania które sta³y siê juz dostêpne
         while (!MinHeapR.empty() && MinHeapR.top().R <= t)
         {
             MaxHeapQ.push(MinHeapR.top());
             MinHeapR.pop();
         }
-        
-        if (!C.empty())//je¿eli jakieœ zadanie zaczê³o siê wykonywaæ
+
+        //dodaj pozosta³¹ czêœæ bierz¹cego zadanoia je¿eli jeszcze zota³a
+        if (!C.empty()) //by³o ju¿ jakieœ zadanie
         {
-            //wstaw pozosta³¹ czêœæ bierz¹cego zadania do zadañ dostêpnych
-            int tFinished = t - tOld;
-            if (tFinished < C.back().P)
+            if (t - tOld < C.back().P) // czas od pocz¹tku zadania do jego przerwania < od jego czasu trwania
             {
-                Task temp = Task(C.back(), -1);
+                Task temp = Task(C.back());
+                C.back().C = -1;
                 temp.R = 0;
-                temp.P -= tFinished;
+                temp.P -= t - tOld;
                 MaxHeapQ.push(temp);
-                t += tFinished;
             }
         }
         
+
+
+        //==========================================================================
+
+
+
+        //ustwianie zadañ w kolejnoœci =============================================
         if (!MaxHeapQ.empty())
         {
-
-            //wstaw lepsze zadanie do uszeregowania
-            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));
-            MaxHeapQ.pop();
-            if (!MaxHeapQ.empty())
-            {
-                t = std::min(t + C.back().P, MaxHeapQ.top().R);
-            }
-            else if (!MinHeapR.empty())
-            {
-                t = std::min(t + C.back().P, MinHeapR.top().R);
-            }
-        }
-        else if (!MinHeapR.empty())
-        {
-            t = MinHeapR.top().R;
-        }
             
-        
+            if (!MinHeapR.empty())
+                t = std::min(t + MaxHeapQ.top().P, MinHeapR.top().R); //dodaj czas trwania zadania dostêpnego lub moment w którym mo¿e zostac przewane
+            else
+                t += MaxHeapQ.top().P; //je¿eli nie ma ju¿ zadañ niedostêpnych ustaw czas na koniec bierz¹cego
+            
+            
+
+            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));//doadaj do uszeregowania zadanie i jego czas zakoñczenia
+            MaxHeapQ.pop();
+        }
+        else
+        {
+            t = MinHeapR.top().R;//je¿eli nie ma zadañ dostêpnych, idŸ do momentu w którym pojawi siê zadanie
+        }
+        //==========================================================================
     }
 }
 
@@ -348,7 +353,7 @@ int main()
 
 	std::string tmp;
 
-    std::string dataSource = "data.001:";
+    std::string dataSource = "data.000:";
 	
 	while (tmp != dataSource)
 		data >> tmp;
