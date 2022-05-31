@@ -199,10 +199,7 @@ struct compareR
 {
     bool operator()(const Task &t1, const Task &t2)
     {
-        if (t1.R == t2.R)
-            return t1.index > t2.index;
-        else
-            return t1.R > t2.R;
+        return t1.R > t2.R;
     }
 };
 
@@ -210,10 +207,7 @@ struct compareQ
 {
     bool operator()(const Task& t1, const Task& t2)
     {
-        if (t1.Q == t2.Q)
-            return t1.index < t2.index;
-        else
-            return t1.Q < t2.Q;
+        return t1.Q < t2.Q;
     }
 };
 
@@ -306,6 +300,52 @@ void Schrage2(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
     }
 }
 
+
+
+int Schrage3(std::priority_queue<Task, std::vector<Task>, compareR >& MinHeapR,
+    std::priority_queue<Task, std::vector<Task>, compareQ >& MaxHeapQ,
+    std::vector<Task>& C)
+{
+    int Cmax = 0;
+    int t = 0;
+    
+
+    while (!MinHeapR.empty() || !MaxHeapQ.empty())
+    {
+        while (!MinHeapR.empty() && MinHeapR.top().R <= t)
+        {
+            MaxHeapQ.push(MinHeapR.top());
+            MinHeapR.pop();
+            if (!C.empty() && !MaxHeapQ.empty() && MaxHeapQ.top().Q > C.back().Q)
+            {
+                int pLast = t - MaxHeapQ.top().R;
+                t = MaxHeapQ.top().R;
+                if (pLast > 0)//dodaj pozosta³¹ czêœæ do zadañ dostêpnych
+                {
+                    Task temp = Task(C.back());
+                    temp.P = pLast;
+                    MaxHeapQ.push(temp);
+                }
+            }
+        }
+        
+
+        if (!MaxHeapQ.empty())
+        {
+            t += MaxHeapQ.top().P; //dodaj czas trwania zadania dostêpnego
+
+            C.push_back(Task(MaxHeapQ.top(), t + MaxHeapQ.top().Q));//doadaj do uszeregowania zadanie i jego czas zakoñczenia
+            Cmax = std::max(Cmax, t + MaxHeapQ.top().Q);
+            MaxHeapQ.pop();
+        }
+        else
+        {
+            t = MinHeapR.top().R;//je¿eli nie ma zadañ dostêpnych, idŸ do momentu w którym pojawi siê zadanie
+        }
+    }
+    return Cmax;
+}
+
 int main()
 {
     int N;
@@ -322,7 +362,7 @@ int main()
 
 	std::string tmp;
 
-    std::string dataSource = "data.007:";
+    std::string dataSource = "data.008:";
 	
 	while (tmp != dataSource)
 		data >> tmp;
@@ -341,21 +381,23 @@ int main()
         MinHeapR.push(Task(r, p, q, i));
         //std::cout << "id: " << tasks[i-1].index << " R: " << tasks[i-1].R << " P: " << tasks[i - 1].P << " Q: " << tasks[i - 1].Q << std::endl;
 	}
-    
-    Schrage2(MinHeapR, MaxHeapQ, C);
+    int Cmax = Schrage3(MinHeapR, MaxHeapQ, C);
 
-    int Cmax = 0;
+    std::cout << "Cmax = " << Cmax << std::endl;
+    /*
+    
     for (int i = 0; i < C.size(); i++)
     {
         Cmax = std::max(Cmax, C[i].C);
     }
     std::cout << "Cmax = " << Cmax << std::endl;
-
+    */
     for (int i = 0; i < C.size(); i++)
     {
         std::cout << C[i].index << " ";
 
     }
+    
     std::cout << std::endl;
 	return 0;
 }
