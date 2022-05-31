@@ -369,7 +369,10 @@ struct compareR
 {
     bool operator()(const Task &t1, const Task &t2)
     {
-        return t1.R > t2.R;
+        if (t1.R == t2.R)
+            return t1.index > t2.index;
+        else
+            return t1.R > t2.R;
     }
 };
 
@@ -377,7 +380,10 @@ struct compareQ
 {
     bool operator()(const Task& t1, const Task& t2)
     {
-        return t1.Q < t2.Q;
+        if (t1.Q == t2.Q)
+            return t1.index > t2.index;
+        else
+            return t1.Q < t2.Q;
     }
 };
 
@@ -506,7 +512,7 @@ int main()
 
 	std::string tmp;
 
-    std::string dataSource = "data.001:";
+    std::string dataSource = "data.003:";
 	
 	while (tmp != dataSource)
 		data >> tmp;
@@ -533,17 +539,17 @@ int main()
         std::cout << MinHeapR[1].index << " ";
         MinHeapR.pop();
     }*/
-    int Cmax = Schrage2(MinHeapR, MaxHeapQ, C);
+    int Cmax = Schrage1(MinHeapR, MaxHeapQ, C);
 
     std::cout << "\nCmax = " << Cmax << std::endl;
-    /*
     
+    /*Cmax = 0;
     for (int i = 0; i < C.size(); i++)
     {
         Cmax = std::max(Cmax, C[i].C);
     }
-    std::cout << "Cmax = " << Cmax << std::endl;
-    */
+    std::cout << "Cmax = " << Cmax << std::endl;*/
+    
     for (int i = 0; i < C.size(); i++)
     {
         std::cout << C[i].index << " ";
